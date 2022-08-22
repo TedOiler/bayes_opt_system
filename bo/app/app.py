@@ -4,6 +4,9 @@ import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
 from scikit_learn_helpers import *
 from datetime import datetime
+from matplotlib import pyplot as plt
+
+plt.style.use('fivethirtyeight')
 
 
 @st.cache
@@ -56,21 +59,26 @@ if df is not None:
                               file_name=f'input_data_{datetime.now().strftime("%Y_%m_%d-%H_%M_%S")}.csv',
                               mime='text/csv')
     st.sidebar.write("---")
-    local_prc_change = np.round(((df.iloc[-1, -1] - df.iloc[-2, -1]) / df.iloc[-2, -1])*100, 2)
+    local_prc_change = np.round(((df.iloc[-1, -1] - df.iloc[-2, -1]) / df.iloc[-2, -1]) * 100, 2)
     local_abs_change = np.round(df.iloc[-1, -1] - df.iloc[-2, -1], 2)
-
-    st.sidebar.write("### ➤ Current vs Previous Experiment")
-    col1, col2 = st.sidebar.columns(2)
+    st.sidebar.write("### Metrics")
+    metrics_tab1, metrics_tab2 = st.sidebar.tabs(["Current vs Previous", " Current vs Global"])
+    col1, col2 = metrics_tab1.columns(2)
     col1.metric("Percentage", value=np.round(df.iloc[-1, -1], 2), delta=f'{local_prc_change}%')
     col2.metric("Absolute", value=np.round(df.iloc[-1, -1], 2), delta=f'{local_abs_change}')
-    col1.write("---")
-    col2.write("---")
-    st.sidebar.write("### ➤ Global Max vs Current Experiment")
-    col11, col22 = st.sidebar.columns(2)
-    global_prc_change = np.round(((df.iloc[-1].max() - df.iloc[-1, -1]) / df.iloc[-1].max())*100, 2)
-    global_abs_change = np.round(df.iloc[-1].max() - df.iloc[-1, -1], 2)
-    col11.metric("Percentage", value=np.round(df.iloc[-1].max(), 2), delta=f'{global_prc_change}%')
-    col22.metric("Absolute", value=np.round(df.iloc[-1, -1], 2), delta=f'{global_abs_change}')
+    col11, col22 = metrics_tab2.columns(2)
+    global_prc_change = np.round(((df.iloc[-1, -1] - df.iloc[:, -1].max()) / df.iloc[-1, -1]) * 100, 2)
+    global_abs_change = np.round(df.iloc[-1, -1] - df.iloc[:, -1].max(), 2)
+    col11.metric("Percentage", value=np.round(df.iloc[:, -1].max(), 2), delta=f'{global_prc_change}%')
+    col22.metric("Absolute", value=np.round(df.iloc[:, -1].max(), 2), delta=f'{global_abs_change}')
+    st.sidebar.write("---")
+    st.sidebar.write("### Timeline of yield")
+    z = np.polyfit(df.index, df.iloc[:, -1], 2)
+    p = np.poly1d(z)
+    fig = plt.figure()
+    plt.plot(df.iloc[:, -1])
+    plt.plot(df.index, p(df.index), "r--")
+    st.sidebar.pyplot(fig)
     st.sidebar.write("---")
 st.write("---")
 
