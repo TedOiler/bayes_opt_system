@@ -7,7 +7,7 @@ def surrogate(model, X):
     return model.predict(X, return_std=True)
 
 
-def acq_pi(X, Xsamples, model):
+def acq_pi(X, Xsamples, model, beta=None):
     yhat, _ = surrogate(model, X)
     best = max(yhat)  # calculate the best so far
 
@@ -18,7 +18,7 @@ def acq_pi(X, Xsamples, model):
     return probs
 
 
-def acq_ei(X, Xsamples, model):
+def acq_ei(X, Xsamples, model, beta=None):
     yhat, _ = surrogate(model, X)
     best = max(yhat)  # calculate the best so far
 
@@ -29,9 +29,17 @@ def acq_ei(X, Xsamples, model):
     return probs
 
 
-def opt_acq(X, y, model, acq, low, high):
+def acq_ucb(X, Xsamples, model, beta):
+    yhat, _ = surrogate(model, X)
+    mu, std = surrogate(model, Xsamples)
+    mu = mu.reshape(-1, 1)[:, 0]
+    probs = mu + np.sqrt(beta)*std
+    return probs
+
+
+def opt_acq(X, y, model, acq, low, high, beta):
     Xsamples = get_random_X(low=low, high=high, samples=10000)
-    scores = acq(X, Xsamples, model)
+    scores = acq(X, Xsamples, model, beta=beta)
     ix = np.argmax(scores)
     return Xsamples[ix]
 

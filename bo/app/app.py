@@ -8,6 +8,8 @@ from matplotlib import pyplot as plt
 
 plt.style.use('fivethirtyeight')
 
+if 'exp_number' not in st.session_state:
+    st.session_state.exp_number = 0
 
 @st.cache
 def convert_df(df):
@@ -26,7 +28,8 @@ model_dict = {
 
 acq_dict = {
     "Expected Improvement": acq_ei,
-    "Probability of Improvement": acq_pi
+    "Probability of Improvement": acq_pi,
+    "Upper Confidence Bound": acq_ucb,
 }
 
 # Sidebar --------------------------------------------------------------------------------------------------------------
@@ -96,13 +99,15 @@ for i in range(2):
     high.append(high_i)
 if any(v == 0 for v in list(np.subtract(np.array(low), np.array(high)))):
     experiment_params_form.warning("High and Low values cannot be equal")
+beta = experiment_params_form.slider("beta", 0.1, 1.0, 0.5, 0.01)
 experiment_params_form.write("---")
 nexp = 1
 model = experiment_params_form.selectbox("Surrogate Model:", ["Gaussian Process"])
-acq = experiment_params_form.selectbox("Acquisition Function:", ["Expected Improvement", "Probability of Improvement"])
+acq = experiment_params_form.selectbox("Acquisition Function:", ["Expected Improvement", "Probability of Improvement", "Upper Confidence Bound"])
 experiment_params_form_btn = experiment_params_form.form_submit_button("✅ Submit")
 
 if experiment_params_form_btn:
+    st.session_state.exp_number += 1
     with st.spinner("Training model"):
         X = df.iloc[:, :-1]
         y = df.iloc[:, -1]
@@ -112,7 +117,8 @@ if experiment_params_form_btn:
                          model=model_dict[model],
                          acq=acq_dict[acq],
                          low=low,
-                         high=high)
+                         high=high,
+                         beta=beta)
         next_x_df = pd.DataFrame(np.append(next_x, np.nan)).T
         next_x_df.columns = df.columns
         output_df = df.append(next_x_df, ignore_index=True)
@@ -120,4 +126,4 @@ if experiment_params_form_btn:
         data_tab2.download_button(label="📥 Export output data to CSV", data=convert_df(output_df),
                                   file_name=f'output_data_{datetime.now().strftime("%Y_%m_%d-%H_%M_%S")}.csv',
                                   mime='text/csv')
-    experiment_params_expander.success('Model Successfully Built! (Check Output Data Tab)')
+    experiment_params_expander.success(f'Model number {st.session_state.exp_number} Successfully Built! (Check Output Data Tab)')
