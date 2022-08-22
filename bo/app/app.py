@@ -94,6 +94,8 @@ for i in range(2):
     high_i = col2.number_input(label=f"high {i + 1}")
     low.append(low_i)
     high.append(high_i)
+if any(v == 0 for v in list(np.subtract(np.array(low), np.array(high)))):
+    experiment_params_form.warning("High and Low values cannot be equal")
 experiment_params_form.write("---")
 nexp = 1
 model = experiment_params_form.selectbox("Surrogate Model:", ["Gaussian Process"])
