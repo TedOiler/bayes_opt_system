@@ -1,8 +1,9 @@
 import numpy as np
 import streamlit as st
 import pandas as pd
-from sklearn.gaussian_process import GaussianProcessRegressor
-from scikit_learn_helpers import *
+from botorch.models import SingleTaskGP
+import torch
+from helpers_botorch import *
 from datetime import datetime
 from matplotlib import pyplot as plt
 
@@ -23,13 +24,11 @@ st.set_page_config(
 )
 
 model_dict = {
-    "Gaussian Process": GaussianProcessRegressor()
+    "Gaussian Process": SingleTaskGP
 }
 
 acq_dict = {
-    "Expected Improvement": acq_ei,
-    "Probability of Improvement": acq_pi,
-    "Upper Confidence Bound": acq_ucb,
+    "Expected Improvement": qExpectedImprovement,
 }
 
 # Sidebar --------------------------------------------------------------------------------------------------------------
@@ -106,24 +105,24 @@ model = experiment_params_form.selectbox("Surrogate Model:", ["Gaussian Process"
 acq = experiment_params_form.selectbox("Acquisition Function:", ["Expected Improvement", "Probability of Improvement", "Upper Confidence Bound"])
 experiment_params_form_btn = experiment_params_form.form_submit_button("✅ Submit")
 
-if experiment_params_form_btn:
-    st.session_state.exp_number += 1
-    with st.spinner("Training model"):
-        X = df.iloc[:, :-1]
-        y = df.iloc[:, -1]
-        model_dict[model].fit(X, y)
-        next_x = opt_acq(X=X,
-                         y=y,
-                         model=model_dict[model],
-                         acq=acq_dict[acq],
-                         low=low,
-                         high=high,
-                         beta=beta)
-        next_x_df = pd.DataFrame(np.append(next_x, np.nan)).T
-        next_x_df.columns = df.columns
-        output_df = df.append(next_x_df, ignore_index=True)
-        data_tab2.table(output_df)
-        data_tab2.download_button(label="📥 Export output data to CSV", data=convert_df(output_df),
-                                  file_name=f'output_data_{datetime.now().strftime("%Y_%m_%d-%H_%M_%S")}.csv',
-                                  mime='text/csv')
-    experiment_params_expander.success(f'Model number {st.session_state.exp_number} Successfully Built! (Check Output Data Tab)')
+# if experiment_params_form_btn:
+#     st.session_state.exp_number += 1
+#     with st.spinner("Training model"):
+#         X = torch.tensor(df.iloc[:, :-1])
+#         y = torch.tensor(df.iloc[:, -1])
+#         model_dict[model].fit(X, y)
+#         next_x = opt_acq(X=X,
+#                          y=y,
+#                          model=model_dict[model],
+#                          acq=acq_dict[acq],
+#                          low=low,
+#                          high=high,
+#                          beta=beta)
+#         next_x_df = pd.DataFrame(np.append(next_x, np.nan)).T
+#         next_x_df.columns = df.columns
+#         output_df = df.append(next_x_df, ignore_index=True)
+#         data_tab2.table(output_df)
+#         data_tab2.download_button(label="📥 Export output data to CSV", data=convert_df(output_df),
+#                                   file_name=f'output_data_{datetime.now().strftime("%Y_%m_%d-%H_%M_%S")}.csv',
+#                                   mime='text/csv')
+#     experiment_params_expander.success(f'Model number {st.session_state.exp_number} Successfully Built! (Check Output Data Tab)')

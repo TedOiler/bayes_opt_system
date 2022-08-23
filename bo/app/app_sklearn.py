@@ -2,7 +2,7 @@ import numpy as np
 import streamlit as st
 import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
-from scikit_learn_helpers import *
+from helpers_scikit_learn import *
 from datetime import datetime
 from matplotlib import pyplot as plt
 
