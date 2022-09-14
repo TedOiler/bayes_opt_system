@@ -194,9 +194,9 @@ st.write("---")
 
 # Parameters -----------------------------------------------------------------------------------------------------------
 # low = [ligand_min_mol_weight, ligand_min_qed]
-low = [138.149, 0.124]
+low = [138.149, 0.124*1000]
 # high = [ligand_max_mol_weight, ligand_max_qed]
-high = [796.673, 0.741]
+high = [796.673, 0.741*1000]
 experiment_params_expander = st.expander("Process Parameters")
 experiment_params_form = experiment_params_expander.form(key="param")
 
