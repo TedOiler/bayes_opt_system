@@ -38,13 +38,13 @@ def acq_ucb(X, Xsamples, model, beta):
 
 
 def opt_acq(X, y, model, acq, low, high, beta):
-    Xsamples = get_random_X(low=low, high=high, samples=10000)
+    Xsamples = get_random_X(low=low, high=high, samples=1000)
     scores = acq(X, Xsamples, model, beta=beta)
     ix = np.argmax(scores)
     return Xsamples[ix]
 
 
 def get_random_X(low, high, samples):
-    ALL = np.array(np.meshgrid(*[np.arange(low[k], high[k], 0.01) for k in range(len(low))])).T.reshape(-1, len(low))
+    ALL = np.array(np.meshgrid(*[np.arange(low[k], high[k], 1) for k in range(len(low))])).T.reshape(-1, len(low))
     idx = random.sample(range(0, ALL.shape[0] - 1), samples)
     return ALL[idx]
