@@ -45,6 +45,6 @@ def opt_acq(X, y, model, acq, low, high, beta):
 
 
 def get_random_X(low, high, samples):
-    ALL = np.array(np.meshgrid(*[np.arange(low[k], high[k], 1) for k in range(len(low))])).T.reshape(-1, len(low))
+    ALL = np.array(np.meshgrid(*[np.arange(low[k], high[k], 5) for k in range(len(low))])).T.reshape(-1, len(low))
     idx = random.sample(range(0, ALL.shape[0] - 1), samples)
     return ALL[idx]
